@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /town/
+Allow: /business/
+Allow: /businesses
+Allow: /towns
+Allow: /town/*
+Allow: /county/
+Allow: /counties
