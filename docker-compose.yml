@@ -10,21 +10,21 @@ services:
       - JINA_API_KEY
       - OPENAI_API_KEY
     ports:
-      - '3333:3333'
+      - "3333:3333"
     restart: unless-stopped
     depends_on:
       - postgresql
   postgresql:
-    image: docker.io/bitnami/postgresql:17
+    image: postgres:alpine
     hostname: postgresql
     ports:
-      - '5431:5432'
+      - "5431:5432"
     volumes:
-      - 'postgresql_data:/bitnami/postgresql'
+      - "postgresql_data:/var/lib/postgresql"
     environment:
-      - POSTGRESQL_DATABASE=indie
-      - POSTGRESQL_USERNAME=indie
-      - POSTGRESQL_PASSWORD=indie
+      - POSTGRES_DB=indie
+      - POSTGRES_USER=indie
+      - POSTGRES_PASSWORD=indie
 
 volumes:
   postgresql_data:
