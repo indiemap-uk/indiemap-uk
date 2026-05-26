@@ -22,7 +22,6 @@ RUN mkdir /pnpm
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable pnpm
-RUN corepack use pnpm@latest
 # Install NPM packages for the Web deployment only
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm --filter web... install --frozen-lockfile
 # Build the Web deployment

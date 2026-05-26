@@ -1,11 +1,11 @@
 packages:
   - workloads/*
   - modules/*
-onlyBuiltDependencies:
-  - cpu-features
-  - dprint
-  - esbuild
-  - protobufjs
-  - ssh2
-  - svelte-preprocess
+allowBuilds:
+  cpu-features: true
+  dprint: true
+  esbuild: true
+  protobufjs: true
+  ssh2: true
+  svelte-preprocess: true
 injectWorkspacePackages: true
