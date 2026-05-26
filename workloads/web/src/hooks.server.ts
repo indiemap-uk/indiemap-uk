@@ -1,80 +1,36 @@
-import type {ServerEnvType} from '$lib/server/ServerEnvSchema'
+import type {Handle} from '@sveltejs/kit'
 
-import {env as dynamicPrivateEnv} from '$env/dynamic/private'
-import {handle as authjsHandle} from '$lib/authN/authjs.js'
-import {isAdminEmail} from '$lib/authZ/isAdminEmail'
-import {checkEnv} from '$lib/server/checkEnv'
-import {ContainerEnvSchema} from '$lib/server/container/ContainerEnvSchema'
-import {getContainer} from '$lib/server/container/getContainer'
-import {type Handle, type HandleServerError, type ServerInit} from '@sveltejs/kit'
-import {sequence} from '@sveltejs/kit/hooks'
-import {redirect} from 'sveltekit-flash-message/server'
-import * as v from 'valibot'
-
-let container: Awaited<ReturnType<typeof getContainer>> | null = null
-
-export const init: ServerInit = async () => {
-  const env = checkEnv(dynamicPrivateEnv)
-  container = await getContainer(v.parse(ContainerEnvSchema, env))
-}
-
-const prepareEnv: Handle = async ({event, resolve}) => {
-  const env = checkEnv(dynamicPrivateEnv)
-  event.locals.env = env as ServerEnvType
-
-  if (!container) {
-    throw new Error('Container not initialized')
-  }
-
-  event.locals.container = container
-
-  return resolve(event)
-}
-
-/** Protects the admin routes **/
-const protectAdmin: Handle = async ({event, resolve}) => {
-  const session = await event.locals.auth()
-  const isAdminUser = isAdminEmail(
-    event.locals.env.ADMIN_USER_EMAILS,
-    session?.user.email,
+export const handle: Handle = async () => {
+  return new Response(
+    `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Indiemap.uk</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: sans-serif;
+        background: #f5f5f5;
+        color: #111;
+      }
+      p {
+        font-size: 1.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <p>Indiemap.uk will open later</p>
+  </body>
+</html>`,
+    {
+      status: 200,
+      headers: {'content-type': 'text/html; charset=utf-8'},
+    },
   )
-  const isLoginPage = event.url.pathname === '/admin/login'
-  const isAdminRoute = event.url.pathname.startsWith('/admin') && !isLoginPage
-
-  if (isAdminRoute && !isAdminUser) {
-    redirect(303, '/admin/login')
-  }
-
-  if (isLoginPage && isAdminUser) {
-    redirect(303, '/admin')
-  }
-
-  return resolve(event)
-}
-
-export const handle = sequence(
-  prepareEnv,
-  authjsHandle,
-  protectAdmin,
-)
-
-export const handleError: HandleServerError = ({error, status, event}) => {
-  // Do not log 404, it floods the logs
-  if (status !== 404) {
-    event.locals.container.logger.error(error, 'Unexpected error')
-  }
-
-  const isAdminRoute = event.url.pathname.startsWith('/admin')
-
-  if (!isAdminRoute) {
-    return {
-      message: 'An error occurred',
-      status,
-    }
-  }
-
-  return {
-    // code is available in pg's AggregateError
-    message: (error as {code?: string}).code ?? 'Unknown error',
-  }
 }
